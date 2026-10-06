@@ -1,7 +1,7 @@
 package com.angelchacon.pedidos_delivery.controller;
 
 import com.angelchacon.pedidos_delivery.entity.Comercio;
-import com.angelchacon.pedidos_delivery.repository.ComercioRepository;
+import com.angelchacon.pedidos_delivery.service.ComercioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,52 +11,35 @@ import java.util.List;
 @RequestMapping("/api/comercios")
 public class ComercioController {
 
-    private final ComercioRepository comercioRepository;
+    private final ComercioService comercioService;
 
-    public ComercioController(ComercioRepository comercioRepository) {
-        this.comercioRepository = comercioRepository;
+    public ComercioController(ComercioService comercioService) {
+        this.comercioService = comercioService;
     }
 
-    // 1. GET: Listar todos
+    // GET: Listar todos los comercios
     @GetMapping
-    public List<Comercio> listarComercios() {
-        return comercioRepository.findAll();
+    public ResponseEntity<List<Comercio>> listarComercios() {
+        return ResponseEntity.ok(comercioService.obtenerTodos());
     }
 
-    // 2. GET: Buscar por ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Comercio> obtenerComercioPorId(@PathVariable Long id) {
-        return comercioRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // 3. POST: Crear un nuevo registro
-    @PostMapping
-    public ResponseEntity<Comercio> crearComercio(@RequestBody Comercio comercio) {
-        return ResponseEntity.ok(comercioRepository.save(comercio));
-    }
-
-    // 4. PUT: Actualizar un registro existente
+    // PUT: Actualizar un comercio existente por su ID
     @PutMapping("/{id}")
     public ResponseEntity<Comercio> actualizarComercio(@PathVariable Long id, @RequestBody Comercio comercioDetalles) {
-        return comercioRepository.findById(id).map(comercioExistente -> {
-            // Actualiza los campos necesarios según tu entidad Comercio
-            comercioExistente.setNombre(comercioDetalles.getNombre());
-            // comercioExistente.setDireccion(comercioDetalles.getDireccion()); // Agrega los campos que tenga tu entidad
-
-            Comercio actualizado = comercioRepository.save(comercioExistente);
-            return ResponseEntity.ok(actualizado);
-        }).orElse(ResponseEntity.notFound().build());
-    }
-
-    // 5. DELETE: Eliminar un registro
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarComercio(@PathVariable Long id) {
-        if (comercioRepository.existsById(id)) {
-            comercioRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
+        Comercio comercioActualizado = comercioService.actualizar(id, comercioDetalles);
+        if (comercioActualizado != null) {
+            return ResponseEntity.ok(comercioActualizado);
         }
         return ResponseEntity.notFound().build();
+    }
+
+    // DELETE: Eliminar un comercio por su ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarComercio(@PathVariable Long id) {
+        boolean eliminado = comercioService.eliminar(id);
+        if (eliminado) {
+            return ResponseEntity.noContent().build(); // Retorna un 204 No Content si se borró con éxito
+        }
+        return ResponseEntity.notFound().build(); // Retorna un 404 si el ID no existe
     }
 }

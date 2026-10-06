@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Entity
 @Table(name = "comercios")
@@ -28,6 +29,9 @@ public class Comercio {
 
     @Column(nullable = false)
     private Boolean abierto = true;
+
+    @OneToMany(mappedBy = "comercio", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Producto> productos;
 
     public enum Categoria {
         RESTAURANTE, SUPERMERCADO, FARMACIA
