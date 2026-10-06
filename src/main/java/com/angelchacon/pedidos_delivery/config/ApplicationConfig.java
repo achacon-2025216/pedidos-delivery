@@ -1,6 +1,7 @@
 package com.angelchacon.pedidos_delivery.config;
 
 import com.angelchacon.pedidos_delivery.repository.UsuarioRepository;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,12 +30,11 @@ public class ApplicationConfig {
                         .password(usuario.getPassword())
                         .roles(usuario.getRol().name())
                         .build())
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + username));
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
     }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        // Se pasa el UserDetailsService directamente en el constructor para Spring Security moderno
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
@@ -48,5 +48,17 @@ public class ApplicationConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    // Bean temporal para asegurar que la contraseña de admin@delivery.com esté correctamente cifrada con BCrypt
+    @Bean
+    public CommandLineRunner inicializarPasswordAdmin(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+        return args -> {
+            usuarioRepository.findByEmail("admin@delivery.com").ifPresent(usuario -> {
+                usuario.setPassword(passwordEncoder.encode("123456"));
+                usuarioRepository.save(usuario);
+                System.out.println(">>> ¡Contraseña de admin@delivery.com actualizada y cifrada con éxito! <<<");
+            });
+        };
     }
 }

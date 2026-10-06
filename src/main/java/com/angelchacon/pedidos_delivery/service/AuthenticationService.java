@@ -23,12 +23,18 @@ public class AuthenticationService {
     }
 
     public JwtResponse authenticate(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+        } catch (Exception e) {
+            System.err.println("¡ERROR DE AUTENTICACIÓN EN SPRING SECURITY!: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
 
         var usuario = usuarioRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
