@@ -3,11 +3,11 @@
 
 # CONFIGURACIÓN GENERAL
 
-BASE_URL="http://localhost:8080/api/v1"
-ADMIN_EMAIL="admin@fastorder.com"
-ADMIN_PASS="Admin123*"
-CLIENTE_EMAIL="cliente@fastorder.com"
-CLIENTE_PASS="Cliente123*"
+BASE_URL="http://localhost:8082/api/v1"
+ADMIN_EMAIL="admin@delivery.com"
+ADMIN_PASS="admin123"
+CLIENTE_EMAIL="cliente@delivery.com"
+CLIENTE_PASS="cliente123"
 
 
 echo " INICIANDO PRUEBAS UNITARIAS (DELIVERY)"
