@@ -3,9 +3,14 @@ package com.angelchacon.pedidos_delivery.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "pedidos")
@@ -20,10 +25,14 @@ public class Pedido {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Usuario cliente;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "repartidor_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Usuario repartidor; // Nullable al crearse
 
     @Column(nullable = false)
@@ -38,6 +47,11 @@ public class Pedido {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoPedido estado;
+
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<DetallePedido> detalles = new ArrayList<>();
 
     public enum EstadoPedido {
         PENDIENTE, EN_PREPARACION, EN_CAMINO, ENTREGADO, CANCELADO

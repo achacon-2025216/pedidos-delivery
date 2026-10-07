@@ -1,45 +1,50 @@
 package com.angelchacon.pedidos_delivery.controller;
 
+import com.angelchacon.pedidos_delivery.dto.ComercioRequest;
+import com.angelchacon.pedidos_delivery.dto.ComercioResponse;
+import com.angelchacon.pedidos_delivery.dto.ProductoRequest;
+import com.angelchacon.pedidos_delivery.dto.ProductoResponse;
 import com.angelchacon.pedidos_delivery.entity.Comercio;
 import com.angelchacon.pedidos_delivery.service.ComercioService;
+import com.angelchacon.pedidos_delivery.service.ProductoService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/comercios")
+@RequestMapping("/api/v1/comercios")
 public class ComercioController {
 
     private final ComercioService comercioService;
+    private final ProductoService productoService;
 
-    public ComercioController(ComercioService comercioService) {
+    public ComercioController(ComercioService comercioService, ProductoService productoService) {
         this.comercioService = comercioService;
+        this.productoService = productoService;
     }
 
-    // GET: Listar todos los comercios
     @GetMapping
-    public ResponseEntity<List<Comercio>> listarComercios() {
-        return ResponseEntity.ok(comercioService.obtenerTodos());
+    public ResponseEntity<List<ComercioResponse>> listar(
+            @RequestParam(required = false) Comercio.Categoria categoria) {
+        return ResponseEntity.ok(comercioService.listarActivos(categoria));
     }
 
-    // PUT: Actualizar un comercio existente por su ID
-    @PutMapping("/{id}")
-    public ResponseEntity<Comercio> actualizarComercio(@PathVariable Long id, @RequestBody Comercio comercioDetalles) {
-        Comercio comercioActualizado = comercioService.actualizar(id, comercioDetalles);
-        if (comercioActualizado != null) {
-            return ResponseEntity.ok(comercioActualizado);
-        }
-        return ResponseEntity.notFound().build();
+    @PostMapping
+    public ResponseEntity<ComercioResponse> crear(@Valid @RequestBody ComercioRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(comercioService.crear(request));
     }
 
-    // DELETE: Eliminar un comercio por su ID
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarComercio(@PathVariable Long id) {
-        boolean eliminado = comercioService.eliminar(id);
-        if (eliminado) {
-            return ResponseEntity.noContent().build(); // Retorna un 204 No Content si se borró con éxito
-        }
-        return ResponseEntity.notFound().build(); // Retorna un 404 si el ID no existe
+    @GetMapping("/{id}/productos")
+    public ResponseEntity<List<ProductoResponse>> listarProductos(@PathVariable Long id) {
+        return ResponseEntity.ok(productoService.listarPorComercio(id));
+    }
+
+    @PostMapping("/{id}/productos")
+    public ResponseEntity<ProductoResponse> agregarProducto(@PathVariable Long id,
+                                                            @Valid @RequestBody ProductoRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(productoService.crear(id, request));
     }
 }
