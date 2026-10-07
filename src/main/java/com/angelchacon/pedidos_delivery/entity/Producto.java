@@ -3,7 +3,10 @@ package com.angelchacon.pedidos_delivery.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+
 import java.math.BigDecimal;
 
 @Entity
@@ -19,6 +22,8 @@ public class Producto {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comercio_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Comercio comercio;
 
     @Column(nullable = false)

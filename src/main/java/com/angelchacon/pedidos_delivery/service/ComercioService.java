@@ -1,11 +1,13 @@
 package com.angelchacon.pedidos_delivery.service;
 
+import com.angelchacon.pedidos_delivery.dto.ComercioRequest;
+import com.angelchacon.pedidos_delivery.dto.ComercioResponse;
 import com.angelchacon.pedidos_delivery.entity.Comercio;
 import com.angelchacon.pedidos_delivery.repository.ComercioRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ComercioService {
@@ -16,28 +18,21 @@ public class ComercioService {
         this.comercioRepository = comercioRepository;
     }
 
-    public List<Comercio> obtenerTodos() {
-        return comercioRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<ComercioResponse> listarActivos(Comercio.Categoria categoria) {
+        List<Comercio> comercios = (categoria == null)
+                ? comercioRepository.findByAbiertoTrue()
+                : comercioRepository.findByAbiertoTrueAndCategoria(categoria);
+        return comercios.stream().map(ComercioResponse::from).toList();
     }
 
-    public Comercio actualizar(Long id, Comercio detalles) {
-        Optional<Comercio> comercioOpt = comercioRepository.findById(id);
-        if (comercioOpt.isPresent()) {
-            Comercio comercio = comercioOpt.get();
-            comercio.setNombre(detalles.getNombre());
-            comercio.setCategoria(detalles.getCategoria());
-            comercio.setDireccion(detalles.getDireccion());
-            comercio.setAbierto(detalles.getAbierto());
-            return comercioRepository.save(comercio);
-        }
-        return null;
-    }
-
-    public boolean eliminar(Long id) {
-        if (comercioRepository.existsById(id)) {
-            comercioRepository.deleteById(id);
-            return true;
-        }
-        return false;
+    @Transactional
+    public ComercioResponse crear(ComercioRequest request) {
+        Comercio comercio = new Comercio();
+        comercio.setNombre(request.nombre());
+        comercio.setCategoria(request.categoria());
+        comercio.setDireccion(request.direccion());
+        comercio.setAbierto(request.abierto() == null || request.abierto());
+        return ComercioResponse.from(comercioRepository.save(comercio));
     }
 }
