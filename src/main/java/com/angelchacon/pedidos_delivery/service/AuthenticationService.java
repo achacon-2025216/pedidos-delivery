@@ -16,25 +16,22 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationService(UsuarioRepository usuarioRepository, JwtService jwtService, AuthenticationManager authenticationManager) {
+    public AuthenticationService(UsuarioRepository usuarioRepository,
+                                 JwtService jwtService,
+                                 AuthenticationManager authenticationManager) {
         this.usuarioRepository = usuarioRepository;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
     }
 
     public JwtResponse authenticate(LoginRequest request) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()
-                    )
-            );
-        } catch (Exception e) {
-            System.err.println("¡ERROR DE AUTENTICACIÓN EN SPRING SECURITY!: " + e.getMessage());
-            e.printStackTrace();
-            throw e;
-        }
+        // Si las credenciales son incorrectas lanza BadCredentialsException (se responde 401)
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
 
         var usuario = usuarioRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
